@@ -1,0 +1,3 @@
+[submodule "files/var/www/modules/core"]
+	path = files/var/www/modules/core
+	url = https://github.com/tiny-php/core

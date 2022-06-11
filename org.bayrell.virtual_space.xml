@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<template>
+	<uid>org.bayrell.virtual_space</uid>
+	<name>Virtual space</name>
+	<version>0.4.1</version>
+	<maintainer>Ildar &lt;ildar@bayrell.org&gt;</maintainer>
+	<marketplace>https://cloud.bayrell.org/</marketplace>
+	<date>2022-05-16T20:24:00+06:00</date>
+	<arch>amd64</arch>
+	<arch>arm64v8</arch>
+	<link name="Docker hub">https://hub.docker.com/r/bayrell/virtual_space</link>
+	<link name="Github">https://github.com/bayrell-os/virtual_space</link>
+	<xml name="bayrell.org" priority="10">https://cloud.bayrell.org/marketplace/org.bayrell.virtual_space.xml</xml>
+	<xml name="github.com" priority="20">https://raw.githubusercontent.com/bayrell-os/virtual_space/main/org.bayrell.virtual_space.xml</xml>
+	<yaml>
+		<services>
+			<_var_app_name_>
+				<image>docker.io/bayrell/virtual_space:0.4.1</image>
+				<hostname>{{.Service.Name}}.{{.Task.ID}}.local</hostname>
+				<volumes>_var_app_name_:/data</volumes>
+			</_var_app_name_>
+		</services>
+    <volumes>
+		<_var_app_name_ />
+    </volumes>
+	</yaml>
+	<variables>
+		<variable>
+			<name>_var_app_name_</name>
+			<label>App name</label>
+			<type>string</type>
+		</variable>
+	</variables>
+	<modificators>
+		<li>org.bayrell.modificator.cloud_os</li>
+		<li>org.bayrell.modificator.deploy_hostname</li>
+	</modificators>
+	<patch>
+		<name>Template patch</name>
+		<operations>
+		</operations>
+	</patch>
+</template>
