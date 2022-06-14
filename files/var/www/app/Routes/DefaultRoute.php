@@ -35,6 +35,12 @@ class DefaultRoute extends Route
 	 */
 	function actionIndex()
 	{
+		$cloud_jwt = $this->container->cookie("cloud_jwt");
+		
+		$jwt = \App\JWT::create($cloud_jwt);
+		$this->setContext("jwt", $jwt);
+		//var_dump($jwt);
+		
 		/* Set result */
 		$this->render("@app/index.twig");
 	}
