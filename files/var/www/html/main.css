@@ -228,6 +228,12 @@ ol, ul {
 	padding: 12px 24px;
 	cursor: pointer;
 }
+.web_form__label{
+	padding-bottom: 5px;
+}
+.web_form__row{
+	padding-bottom: 20px;
+}
 .web_form__result{
 	padding-top: 10px;
 	text-align: center;

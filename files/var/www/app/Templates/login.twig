@@ -1,5 +1,43 @@
 {% extends "@app/layout.twig" %}
 
 {% block content %}
-Login
+
+<style type="text/css">
+.page_login{
+	padding-top: 100px;
+}
+.page_login h1{
+	text-align: center;
+}
+.page_login .web_form{
+	width: 500px;
+	margin-left: auto;
+	margin-right: auto;
+}
+</style>
+
+<div class="page_login">
+	
+	<h1>Login to Cloud OS</h1>
+	
+	<form class="web_form" method="POST" enctype="multipart/form-data">
+		<div class="web_form__row">
+			<div class="web_form__label">Login</div>
+			<input class="web_form__input" name="login" value="{{ form.login }}" />
+		</div>
+		<div class="web_form__row">
+			<div class="web_form__label">Password</div>
+			<input class="web_form__input" name="password" type="password"
+				value="{{ form.password }}" />
+		</div>
+		<div class="web_form__buttons">
+			<button>Login</button>
+		</div>
+		<div class="web_form__result {% if form.error_code < 0 %}web_form__result--error{% endif %} {% if form.error_code > 0 %}web_form__result--success{% endif %}">
+			{{ form.result }}
+		</div>
+	</form>
+	
+</div>
+
 {% endblock %}

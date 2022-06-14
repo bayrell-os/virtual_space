@@ -1,5 +1,24 @@
 <?php
 
+/*!
+ *  Bayrell Cloud OS
+ *
+ *  (c) Copyright 2020 - 2022 "Ildar Bikmamatov" <support@bayrell.org>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+
 namespace App;
 
 
@@ -19,6 +38,7 @@ class Module
 		add_chain("routes", static::class, "routes");
 		add_chain("base_url", static::class, "base_url");
 		add_chain("twig_opt", static::class, "twig_opt");
+		add_chain("bus_gateway", static::class, "bus_gateway");
 	}
 	
 	
@@ -105,6 +125,38 @@ class Module
 		$twig_opt = $res["twig_opt"];
 		$twig_opt["cache"] = "/data/php/cache/twig";
 		$res["twig_opt"] = $twig_opt;
+	}
+	
+	
+	
+	/**
+	 * Bus gateway
+	 */
+	static function bus_gateway($res)
+	{
+		$gateway = $res["project"];
+		if ($gateway == "cloud_os")
+		{
+			$res["gateway"] = "http://" . env("CLOUD_OS_GATEWAY") . "/api/bus/";
+		}
+	}
+	
+	
+	
+	/**
+	 * Run web App
+	 */
+	static function runWebApp()
+	{
+		/* Create app */
+		$app = create_app_instance();
+		
+		/* Add modules */
+		$app->addModule(static::class);
+		
+		/* Run app */
+		$app->init();
+		$app->runWebApp();
 	}
 	
 }
