@@ -144,9 +144,9 @@ class Module
 	
 	
 	/**
-	 * Run web App
+	 * Create App
 	 */
-	static function runWebApp()
+	static function createApp()
 	{
 		/* Create app */
 		$app = create_app_instance();
@@ -156,7 +156,7 @@ class Module
 		
 		/* Run app */
 		$app->init();
-		$app->runWebApp();
+		return $app;
 	}
 	
 }
