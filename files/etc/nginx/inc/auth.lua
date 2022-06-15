@@ -6,14 +6,18 @@ local is_login_redirect = 0
 
 -- Check no redirect pages
 local is_no_redirect_page = 0
-if string.sub(ngx.var.request_uri, 1, 6) == "/login" then
-	is_no_redirect_page = 1
+if ngx.var.no_redirect_login == "1" or ngx.var.no_redirect_login == 1 then
+	if string.sub(ngx.var.request_uri, 1, 6) == "/login" then
+		is_no_redirect_page = 1
+	end
+	if string.sub(ngx.var.request_uri, 1, 7) == "/logout" then
+		is_no_redirect_page = 1
+	end
 end
-if string.sub(ngx.var.request_uri, 1, 7) == "/logout" then
-	is_no_redirect_page = 1
-end
-if string.sub(ngx.var.request_uri, 1, 5) == "/api/" then
-	is_no_redirect_page = 1
+if ngx.var.no_redirect_api == "1" or ngx.var.no_redirect_api == 1 then
+	if string.sub(ngx.var.request_uri, 1, 5) == "/api/" then
+		is_no_redirect_page = 1
+	end
 end
 
 -- Get redirect url
@@ -50,6 +54,8 @@ end
 if is_no_redirect_page == 1 then
 	is_login_redirect = 0
 end
+
+-- is_login_redirect = 0
 
 -- Redirect to login page
 if is_login_redirect == 1 then
