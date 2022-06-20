@@ -135,18 +135,18 @@ end
 local function show_login_page()
 	
 	-- Check no redirect pages
-	local is_no_redirect_page = 0
+	local is_show_login_page = 1
 	if ngx.var.no_redirect_login == "1" or ngx.var.no_redirect_login == 1 then
 		if string.sub(ngx.var.request_uri, 1, 6) == "/login" then
-			is_no_redirect_page = 1
+			is_show_login_page = 0
 		end
 		if string.sub(ngx.var.request_uri, 1, 7) == "/logout" then
-			is_no_redirect_page = 1
+			is_show_login_page = 0
 		end
 	end
 	if ngx.var.no_redirect_api == "1" or ngx.var.no_redirect_api == 1 then
 		if string.sub(ngx.var.request_uri, 1, 5) == "/api/" then
-			is_no_redirect_page = 1
+			is_show_login_page = 0
 		end
 	end
 
@@ -158,9 +158,11 @@ local function show_login_page()
 	redirect_url = redirect_url .. ngx.var.request_uri
 	
 	
-	if is_no_redirect_page then
+	if is_show_login_page == 1 then
 		return ngx.redirect("/login?r=" .. redirect_url);
 	end
+	
+	-- ngx.log(ngx.STDERR, "Show login=" .. tostring(is_show_login_page))
 	
 end
 
