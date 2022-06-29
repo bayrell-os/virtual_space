@@ -104,7 +104,25 @@ class DefaultRoute extends Route
 		/* If success redirect to main page */
 		if ($form["error_code"] == 1)
 		{
-			$this->redirect("/");
+			$redirect = trim( urldecode( $this->container->get("r", "") ) ); 
+			
+			if ($redirect != "")
+			{
+				$arr = parse_url($redirect);
+				$path = isset($arr["path"]) ? $arr["path"] : "";
+				$query = isset($arr["query"]) ? $arr["query"] : "";
+				$fragment = isset($arr["fragment"]) ? $arr["fragment"] : "";
+				
+				$redirect_url = $path;
+				if ($query != "") $redirect_url .= "?" . $query;
+				if ($fragment != "") $redirect_url .= "#" . $fragment;
+				
+				$this->redirect($redirect_url);
+			}
+			else
+			{
+				$this->redirect("/");
+			}
 		}
 		
 		/* Else render form */
