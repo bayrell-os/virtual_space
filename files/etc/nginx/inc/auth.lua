@@ -95,6 +95,7 @@ local function check_basic_auth()
 	local password = auth_header:sub(index+1)
 	
 	if check_htpasswd(username, password) == 1 then
+		ngx.req.set_header("JWT_AUTH_USER", username)
 		return 1
 	end
 	
@@ -123,6 +124,9 @@ local function check_jwt_auth()
 		-- ngx.log(ngx.STDERR, cjson.encode(jwt_obj))
 		
 		if jwt_obj.valid == true and jwt_obj.verified == true then
+			
+			ngx.req.set_header("JWT_AUTH_USER", jwt_obj.payload.l)
+			
 			return 1
 		end
 		
@@ -174,6 +178,10 @@ local function show_basic_auth()
 	ngx.say('401 Access Denied')
 	ngx.exit(ngx.HTTP_UNAUTHORIZED)
 end
+
+
+-- Set default user name
+ngx.req.set_header("JWT_AUTH_USER", "")
 
 
 -- Is auth
