@@ -92,7 +92,7 @@ function send_api($url, $data)
  */
 function update_nginx_file($file_name, $new_content)
 {
-	$file = "/etc/nginx/" . $file_name;
+	$file = "/etc/nginx" . $file_name;
 	$old_content = "";
 	
 	if (file_exists($file))
@@ -133,7 +133,7 @@ function nginx_reload()
  */
 function update_htpasswd()
 {
-	$url = "http://" . CLOUD_OS_GATEWAY . "/api/bus/get_htpasswd/";
+	$url = "http://" . CLOUD_OS_GATEWAY . "/api/bus/nginx/htpasswd/";
 	$data = [];
 	$api_res = send_api($url, $data);
     

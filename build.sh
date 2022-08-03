@@ -15,8 +15,8 @@ case "$1" in
 	test)
 		echo "Build $IMAGE:$VERSION.$SUBVERSION-$TAG"
 		docker build ./ -t $IMAGE:$VERSION.$SUBVERSION-$TAG --file Dockerfile
+		docker tag $IMAGE:$VERSION.$SUBVERSION-$TAG $IMAGE:$VERSION.$SUBVERSION
 		docker tag $IMAGE:$VERSION.$SUBVERSION-$TAG $IMAGE:$VERSION
-		cd ..
 	;;
 	
 	amd64)

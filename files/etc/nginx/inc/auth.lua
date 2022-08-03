@@ -95,7 +95,7 @@ local function check_basic_auth()
 	local password = auth_header:sub(index+1)
 	
 	if check_htpasswd(username, password) == 1 then
-		ngx.req.set_header("JWT_AUTH_USER", username)
+		ngx.req.set_header("CLOUD_AUTH_USER", username)
 		return 1
 	end
 	
@@ -125,7 +125,7 @@ local function check_jwt_auth()
 		
 		if jwt_obj.valid == true and jwt_obj.verified == true then
 			
-			ngx.req.set_header("JWT_AUTH_USER", jwt_obj.payload.l)
+			ngx.req.set_header("CLOUD_AUTH_USER", jwt_obj.payload.l)
 			
 			return 1
 		end
@@ -181,12 +181,15 @@ end
 
 
 -- Set default user name
-ngx.req.set_header("JWT_AUTH_USER", "")
-
+ngx.req.set_header("CLOUD_AUTH_USER", "")
 
 -- Is auth
 local is_jwt_auth = check_jwt_auth()
 local is_basic_auth = check_basic_auth()
+
+-- ngx.log(ngx.STDERR, "Enable auth basic=" .. tostring(ngx.var.enable_auth_basic))
+-- ngx.log(ngx.STDERR, "Is JWT Auth=" .. tostring(is_jwt_auth))
+-- ngx.log(ngx.STDERR, "Is Basic Auth=" .. tostring(is_basic_auth))
 
 if ngx.var.enable_auth_basic == "1" or ngx.var.enable_auth_basic == 1 then
 	if is_basic_auth == 0 and is_jwt_auth == 0 then
@@ -197,5 +200,3 @@ else
 		show_login_page()
 	end
 end
-
--- ngx.log(ngx.STDERR, "Enable=" .. tostring(ngx.var.enable_auth_basic))
