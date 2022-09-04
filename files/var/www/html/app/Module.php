@@ -57,6 +57,15 @@ class Module
 	 */
 	static function init_di_defs($res)
 	{
+		$defs = $res->defs;
+		
+		/* Setup bus key */
+		$defs["settings"]["bus_env_key"] = "CLOUD_OS_KEY";
+		
+		/* Setup jwt cookie key */
+		$defs["settings"]["jwt_cookie_key"] = "cloud_jwt";
+		
+		$res->defs = $defs;
 	}
 	
 	

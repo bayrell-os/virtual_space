@@ -26,6 +26,11 @@ class DefaultRoute extends Route
 			"name" => "site:login",
 			"method" => [$this, "actionLogin"],
 		]);
+		$route_container->addRoute([
+			"url" => "/logout",
+			"name" => "site:logout",
+			"method" => [$this, "actionLogout"],
+		]);
 	}
 	
 	
@@ -35,11 +40,20 @@ class DefaultRoute extends Route
 	 */
 	function actionIndex()
 	{
+		$domain_name = $this->container->server("HTTP_HOST");
+		$space_uid = $this->container->header("x-space-uid");
 		$cloud_jwt = $this->container->cookie("cloud_jwt");
 		
-		$jwt = \App\JWT::create($cloud_jwt);
-		$this->setContext("jwt", $jwt);
-		//var_dump($jwt);
+		/* Call api */
+		$res = Bus::call
+		(
+			"/cloud_os/bus/space/get_routes/",
+			[
+				"space_uid" => $space_uid,
+				"domain_name" => $domain_name,
+			]
+		);
+		$this->setContext("routes", $res->result);
 		
 		/* Set result */
 		$this->render("@app/index.twig");
@@ -63,10 +77,11 @@ class DefaultRoute extends Route
 		];
 		
 		/* Is post ? */
-		if ($this->isPost())
+		if ($this->container->isPost())
 		{
 			$login = $this->container->post("login");
 			$password = $this->container->post("password");
+			$space_uid = $this->container->header("x-space-uid");
 			
 			/* Call api */
 			$res = Bus::call
@@ -75,6 +90,7 @@ class DefaultRoute extends Route
 				[
 					"login" => $login,
 					"password" => $password,
+					"space_uid" => $space_uid,
 				]
 			);
 			
@@ -91,11 +107,10 @@ class DefaultRoute extends Route
 				$expires = isset($jwt_data["expires"]) ? $jwt_data["expires"] : 0;
 				if ($jwt_string)
 				{
-					$this->setCookie([
+					$this->container->setCookie([
 						"name" => "cloud_jwt",
 						"value" => $jwt_string,
 						"expires" => $expires,
-						"path" => "/",
 					]);
 				}
 			}
@@ -133,6 +148,43 @@ class DefaultRoute extends Route
 			
 			/* Set result */
 			$this->render("@app/login.twig");
+		}
+	}
+	
+	
+	
+	/**
+	 * Action logout
+	 */
+	function actionLogout()
+	{
+		$auth = auth();
+		
+		if ($auth->isAuth())
+		{
+			$jwt = $auth->getJWTString();
+			
+			/* Call api */
+			$res = Bus::call
+			(
+				"/cloud_os/bus/logout/",
+				[
+					"jwt" => $jwt,
+				]
+			);
+			
+			// $res->debug();
+			
+			if ($res->isSuccess())
+			{
+				$this->container->setCookie([
+					"name" => "cloud_jwt",
+					"value" => "",
+					"expires" => 0,
+				]);
+				$this->redirect("/");
+			}
+			
 		}
 	}
 	
