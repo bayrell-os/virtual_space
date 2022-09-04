@@ -4,7 +4,7 @@ namespace App\Routes;
 
 use TinyPHP\RenderContainer;
 use TinyPHP\Route;
-use TinyPHP\RouteContainer;
+use TinyPHP\RouteList;
 use TinyPHP\Bus;
 
 
@@ -14,19 +14,19 @@ class DefaultRoute extends Route
 	/**
 	 * Declare routes
 	 */
-	function routes(RouteContainer $route_container)
+	function routes(RouteList $routes)
 	{
-		$route_container->addRoute([
+		$routes->addRoute([
 			"url" => "/",
 			"name" => "site:index",
 			"method" => [$this, "actionIndex"],
 		]);
-		$route_container->addRoute([
+		$routes->addRoute([
 			"url" => "/login",
 			"name" => "site:login",
 			"method" => [$this, "actionLogin"],
 		]);
-		$route_container->addRoute([
+		$routes->addRoute([
 			"url" => "/logout",
 			"name" => "site:logout",
 			"method" => [$this, "actionLogout"],
@@ -55,8 +55,27 @@ class DefaultRoute extends Route
 		);
 		
 		//$res->debug();
+		//$auth = auth();
+		//var_dump( $auth->getJWT() );
 		
-		$this->setContext("routes", $res->result);
+		$routes = [];
+		if ($res->isSuccess())
+		{
+			$routes = $res->result;
+			
+			$routes = array_map(
+				function ($route)
+				{
+					$route["route_prefix"] = preg_replace("/\/+$/", "", $route["route_prefix"]);
+					$route["route_prefix"] .= "/";
+					return $route;
+				},
+				$routes
+			);
+			
+		}
+		
+		$this->setContext("routes", $routes);
 		
 		/* Set result */
 		$this->render("@app/index.twig");
@@ -96,6 +115,8 @@ class DefaultRoute extends Route
 					"space_uid" => $space_uid,
 				]
 			);
+			
+			//$res->debug();
 			
 			$form["login"] = $login;
 			// $form["password"] = $password;
@@ -163,6 +184,9 @@ class DefaultRoute extends Route
 	{
 		$auth = auth();
 		
+		//var_dump(1111);
+		//var_dump($auth->isAuth());
+		
 		if ($auth->isAuth())
 		{
 			$jwt = $auth->getJWTString();
@@ -176,7 +200,7 @@ class DefaultRoute extends Route
 				]
 			);
 			
-			// $res->debug();
+			$res->debug();
 			
 			if ($res->isSuccess())
 			{
@@ -187,7 +211,10 @@ class DefaultRoute extends Route
 				]);
 				$this->redirect("/");
 			}
-			
+		}
+		else
+		{
+			$this->redirect("/");
 		}
 	}
 	

@@ -35,8 +35,8 @@ local function check_htpasswd(username, password)
 		
 		local line_index = line:find(':')
 		if line_index ~= nil then
-			local line_user = line:sub(0, line_index-1)
-			local line_pass = line:sub(line_index+1)
+			local line_user = line:sub(0, line_index - 1)
+			local line_pass = line:sub(line_index + 1)
 			
 			if line_user == username then
 				
@@ -91,11 +91,11 @@ local function check_basic_auth()
 	if index == nil then
 		return 0
 	end
-	local username = auth_header:sub(0, index-1)
-	local password = auth_header:sub(index+1)
+	local username = auth_header:sub(0, index - 1)
+	local password = auth_header:sub(index + 1)
 	
 	if check_htpasswd(username, password) == 1 then
-		ngx.req.set_header("CLOUD_AUTH_USER", username)
+		ngx.req.set_header("JWT_AUTH_USER", username)
 		return 1
 	end
 	
@@ -109,7 +109,14 @@ local function check_jwt_auth()
 	local jwt = require "resty.jwt"
 	
 	-- Read JWT Cookie
-	local jwt_str = ngx.var.cookie_cloud_jwt
+	local jwt_cookie_key = os.getenv("JWT_COOKIE_KEY")
+	-- ngx.log(ngx.STDERR, jwt_cookie_key)
+	if jwt_cookie_key == nil then
+		return 0
+	end
+	
+	jwt_cookie_key = "cookie_" .. jwt_cookie_key
+	local jwt_str = ngx.var[jwt_cookie_key]
 
 	-- Check JWT Cookie
 	if jwt_str == nil or jwt_str == '' then
@@ -121,11 +128,11 @@ local function check_jwt_auth()
 		local jwt_obj = jwt:verify(jwt_public_key, jwt_str)
 		
 		-- ngx.log(ngx.STDERR, jwt_public_key)
-		-- ngx.log(ngx.STDERR, cjson.encode(jwt_obj))
+		ngx.log(ngx.STDERR, cjson.encode(jwt_obj))
 		
 		if jwt_obj.valid == true and jwt_obj.verified == true then
 			
-			ngx.req.set_header("CLOUD_AUTH_USER", jwt_obj.payload.l)
+			ngx.req.set_header("JWT_AUTH_USER", jwt_obj.payload.l)
 			
 			return 1
 		end
@@ -153,7 +160,7 @@ local function show_login_page()
 			is_show_login_page = 0
 		end
 	end
-
+	
 	-- Get redirect url
 	local redirect_url = ""
 	if ngx.var.http_x_route_prefix ~= nil and ngx.var.http_x_route_prefix ~= "" then
@@ -161,9 +168,8 @@ local function show_login_page()
 	end
 	redirect_url = redirect_url .. ngx.var.request_uri
 	
-	
 	if is_show_login_page == 1 then
-		return ngx.redirect("/login?r=" .. redirect_url);
+		return ngx.redirect("/login?r=" .. redirect_url, ngx.HTTP_MOVED_TEMPORARILY);
 	end
 	
 	-- ngx.log(ngx.STDERR, "Show login=" .. tostring(is_show_login_page))
@@ -181,7 +187,7 @@ end
 
 
 -- Set default user name
-ngx.req.set_header("CLOUD_AUTH_USER", "")
+ngx.req.set_header("JWT_AUTH_USER", "")
 
 -- Is auth
 local is_jwt_auth = check_jwt_auth()

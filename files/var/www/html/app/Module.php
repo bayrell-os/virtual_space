@@ -60,10 +60,10 @@ class Module
 		$defs = $res->defs;
 		
 		/* Setup bus key */
-		$defs["settings"]["bus_env_key"] = "CLOUD_OS_KEY";
+		$defs["settings"]["bus_key"] = env("CLOUD_OS_KEY");
 		
 		/* Setup jwt cookie key */
-		$defs["settings"]["jwt_cookie_key"] = "cloud_jwt";
+		$defs["settings"]["jwt_cookie_key"] = env("JWT_COOKIE_KEY");
 		
 		$res->defs = $defs;
 	}
