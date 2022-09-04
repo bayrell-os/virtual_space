@@ -47,12 +47,15 @@ class DefaultRoute extends Route
 		/* Call api */
 		$res = Bus::call
 		(
-			"/cloud_os/bus/space/get_routes/",
+			"/cloud_os/space/get_routes/",
 			[
 				"space_uid" => $space_uid,
 				"domain_name" => $domain_name,
 			]
 		);
+		
+		//$res->debug();
+		
 		$this->setContext("routes", $res->result);
 		
 		/* Set result */
@@ -86,7 +89,7 @@ class DefaultRoute extends Route
 			/* Call api */
 			$res = Bus::call
 			(
-				"/cloud_os/bus/login/",
+				"/cloud_os/login/",
 				[
 					"login" => $login,
 					"password" => $password,
@@ -167,7 +170,7 @@ class DefaultRoute extends Route
 			/* Call api */
 			$res = Bus::call
 			(
-				"/cloud_os/bus/logout/",
+				"/cloud_os/logout/",
 				[
 					"jwt" => $jwt,
 				]
