@@ -115,7 +115,7 @@ local function bus_call(url, data)
 	local cURL = require("cURL")
 	local out = ""
 	
-	c = cURL.easy_init()
+	local c = cURL.easy_init()
 	c = cURL.easy{
 		url = url,
 		post = true,
@@ -128,14 +128,13 @@ local function bus_call(url, data)
 		out = out .. str
 	end})
 	
-	obj = cjson.decode(out)
+	local obj = cjson.decode(out)
 	
 	if obj.error.code == 1 then
 		return obj.result.jwt
 	end
 	
 	return ""
-	
 end
 
 
@@ -148,29 +147,36 @@ local function check_htpasswd_os(username, password)
 		return 0
 	end
 	
-	local cache = ngx.shared.basic_auth_cache
-	local cache_key = username .. ':' .. password
-	
-	-- Read from cache
-	local jwt_str = cache:get(cache_key)
-	
-	if jwt_str == "" then
-		return 0
-	end
-	
 	local space_uid = ngx.req.get_headers()['X-SPACE-UID']
 	if space_uid == "" then
 		return 0
 	end
 	
-	-- Post data
-	local data = {}
-	data.login = login
-	data.password = password
-	data.space_uid = space_uid
+	local cache = ngx.shared.basic_auth_cache
+	local cache_key = username .. ':' .. password
+	local cjson = require "cjson"
+	local jwt = require "resty.jwt"
 	
-	-- Call login api
-	jwt_str = bus_call("/space/login", data)
+	-- Read from cache
+	local jwt_str = cache:get(cache_key)
+	-- ngx.log(ngx.STDERR, "Cache " .. tostring(jwt_str))
+	
+	-- Call bus login
+	if jwt_str == nil then
+		
+		-- Post data
+		local data = {}
+		data.login = username
+		data.password = password
+		data.space_uid = space_uid
+		-- ngx.log(ngx.STDERR, cjson.encode(data))
+		
+		-- Call login api
+		jwt_str = bus_call("/space/login", data)
+	
+	end
+	
+	-- ngx.log(ngx.STDERR, "JWT " .. tostring(jwt_str))
 	
 	-- Check JWT Token Sign
 	local jwt_public_key = os.getenv("JWT_PUBLIC_KEY")
@@ -178,15 +184,17 @@ local function check_htpasswd_os(username, password)
 	
 	-- ngx.log(ngx.STDERR, jwt_public_key)
 	-- ngx.log(ngx.STDERR, cjson.encode(jwt_obj))
+	-- ngx.log(ngx.STDERR, jwt_obj.valid ~= true)
+	-- ngx.log(ngx.STDERR, jwt_obj.verified ~= true)
 	
-	if jwt_obj.valid != true or jwt_obj.verified != true then
+	if jwt_obj.valid ~= true or jwt_obj.verified ~= true then
 		jwt_str = ""
 	end
 	
 	-- Save to cache
 	cache:set(cache_key, jwt_str, 180)
 	
-	if jwt_str == "" or jwt_str == "nil" then
+	if jwt_str == "" then
 		return 0
 	end
 	
