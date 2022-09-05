@@ -76,7 +76,8 @@ function send_api($url, $data)
 	
 	if (
 		$response != null &&
-		isset($response["error"]) && isset($response["error"]["code"]) &&
+		isset($response["error"]) &&
+		isset($response["error"]["code"]) &&
 		$response["error"]["code"] == 1
 	)
 	{

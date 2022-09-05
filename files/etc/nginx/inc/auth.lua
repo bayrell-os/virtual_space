@@ -24,7 +24,7 @@ local function check_password(password, hash1)
 end
 
 
-local function check_htpasswd(username, password)
+local function check_htpasswd_file(username, password)
 	
 	local file = io.open("/etc/nginx/inc/htpasswd.inc")
 	if file == nil then
@@ -68,13 +68,139 @@ local function check_htpasswd(username, password)
 end
 
 
+local function bus_call(url, data)
+	
+	local cjson = require "cjson"
+	
+	local cloud_os_gateway = os.getenv("CLOUD_OS_GATEWAY")
+	local cloud_os_key = os.getenv("CLOUD_OS_KEY")
+	local data_keys = {}
+	local time = os.time()
+	
+	-- Add slash to url
+	if string.sub(url, 1, 1) == "/" then url = string.sub(url, 2) end
+	if string.sub(url, -1, -1) ~= "/" then url = url .. "/" end
+	
+	-- Build url
+	url = "http://" .. cloud_os_gateway .. "/api/bus/" .. url
+	
+	-- Build data_keys
+	for k, v in pairs(data) do
+		table.insert(data_keys, k)
+	end
+	
+	-- Sort data_keys
+	table.sort(data_keys)
+	
+	-- Insert time and cloud os key to data_keys
+	table.insert(data_keys, time)
+	table.insert(data_keys, cloud_os_key)
+	
+	-- Get text from data_key
+	local text = table.concat(data_keys, "|")
+	
+	-- Get sign
+	local md5 = require 'md5'
+	local sign = md5.sumhexa(text)
+	
+	-- Get post data
+	local post_data = {}
+	post_data.alg = "md5"
+	post_data.data = data
+	post_data.time = time
+	post_data.sign = sign
+	post_data = cjson.encode(post_data)
+	
+	-- Send request
+	local cURL = require("cURL")
+	local out = ""
+	
+	c = cURL.easy_init()
+	c = cURL.easy{
+		url = url,
+		post = true,
+		httpheader = {
+			"Content-Type: application/json";
+		},
+		postfields = post_data,
+	}
+	c:perform({ writefunction = function(str)
+		out = out .. str
+	end})
+	
+	obj = cjson.decode(out)
+	
+	if obj.error.code == 1 then
+		return obj.result.jwt
+	end
+	
+	return ""
+	
+end
+
+
+local function check_htpasswd_os(username, password)
+	
+	if username == "" then
+		return 0
+	end
+	if password == "" then
+		return 0
+	end
+	
+	local cache = ngx.shared.basic_auth_cache
+	local cache_key = username .. ':' .. password
+	
+	-- Read from cache
+	local jwt_str = cache:get(cache_key)
+	
+	if jwt_str == "" then
+		return 0
+	end
+	
+	local space_uid = ngx.req.get_headers()['X-SPACE-UID']
+	if space_uid == "" then
+		return 0
+	end
+	
+	-- Post data
+	local data = {}
+	data.login = login
+	data.password = password
+	data.space_uid = space_uid
+	
+	-- Call login api
+	jwt_str = bus_call("/space/login", data)
+	
+	-- Check JWT Token Sign
+	local jwt_public_key = os.getenv("JWT_PUBLIC_KEY")
+	local jwt_obj = jwt:verify(jwt_public_key, jwt_str)
+	
+	-- ngx.log(ngx.STDERR, jwt_public_key)
+	-- ngx.log(ngx.STDERR, cjson.encode(jwt_obj))
+	
+	if jwt_obj.valid != true or jwt_obj.verified != true then
+		jwt_str = ""
+	end
+	
+	-- Save to cache
+	cache:set(cache_key, jwt_str, 180)
+	
+	if jwt_str == "" or jwt_str == "nil" then
+		return 0
+	end
+	
+	return 1
+end
+
+
 local function check_basic_auth()
 	
 	local auth_header = ngx.req.get_headers()['Authorization']
 	
 	if auth_header == nil then
 		return 0
-    end
+	end
 	
 	local index = auth_header:find('Basic ')
 	if index == nil then
@@ -94,7 +220,7 @@ local function check_basic_auth()
 	local username = auth_header:sub(0, index - 1)
 	local password = auth_header:sub(index + 1)
 	
-	if check_htpasswd(username, password) == 1 then
+	if check_htpasswd_os(username, password) == 1 then
 		ngx.req.set_header("JWT_AUTH_USER", username)
 		return 1
 	end
@@ -128,7 +254,7 @@ local function check_jwt_auth()
 		local jwt_obj = jwt:verify(jwt_public_key, jwt_str)
 		
 		-- ngx.log(ngx.STDERR, jwt_public_key)
-		ngx.log(ngx.STDERR, cjson.encode(jwt_obj))
+		-- ngx.log(ngx.STDERR, cjson.encode(jwt_obj))
 		
 		if jwt_obj.valid == true and jwt_obj.verified == true then
 			

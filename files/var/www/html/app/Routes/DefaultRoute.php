@@ -108,7 +108,7 @@ class DefaultRoute extends Route
 			/* Call api */
 			$res = Bus::call
 			(
-				"/cloud_os/login/",
+				"/cloud_os/space/login/",
 				[
 					"login" => $login,
 					"password" => $password,
@@ -194,7 +194,7 @@ class DefaultRoute extends Route
 			/* Call api */
 			$res = Bus::call
 			(
-				"/cloud_os/logout/",
+				"/cloud_os/space/logout/",
 				[
 					"jwt" => $jwt,
 				]
