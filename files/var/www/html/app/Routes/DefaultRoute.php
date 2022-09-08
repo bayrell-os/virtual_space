@@ -54,7 +54,7 @@ class DefaultRoute extends Route
 			]
 		);
 		
-		//$res->debug();
+		//$res->debug(1);
 		//$auth = auth();
 		//var_dump( $auth->getJWT() );
 		
