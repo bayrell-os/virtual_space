@@ -59,9 +59,45 @@ case "$1" in
 		$0 manifest
 	;;
 	
+	upload-image)
+		
+		if [ -z "$2" ] || [ -z "$3" ]; then
+			echo "Type:"
+			echo "$0 upload-image 0.4.2 raspa 172"
+			echo "  0.4.2 - version"
+			echo "  raspa - ssh host"
+			echo "  172 - bandwidth KiB/s"
+			exit 1
+		fi
+		
+		version=$2
+		ssh_host=$3
+		bwlimit=172
+		
+		if [ ! -z "$4" ]; then
+			bwlimit=$4
+		fi
+		
+		mkdir -p images
+		
+		echo "Save image"
+		docker image save bayrell/virtual_space:$version | gzip \
+		    > ./images/virtual_space-$version.tar.gz
+
+		echo "Upload image"
+		ssh $ssh_host "mkdir -p ~/images"
+		ssh $ssh_host "yes | rm -f ~/images/virtual_space-$version.tar.gz"
+		
+		time rsync -aSsuh --info=progress2 --bwlimit=$bwlimit ./images/virtual_space-$version.tar.gz \
+			$ssh_host:images/virtual_space-$version.tar.gz
+
+		echo "Load image"
+		ssh $ssh_host "docker load -i ~/images/virtual_space-$version.tar.gz"
+	;;
+	
 	*)
 		echo "Build $IMAGE:$VERSION.$SUBVERSION"
-		echo "Usage: $0 {amd64|arm64v8|manifest|all|test}"
+		echo "Usage: $0 {amd64|arm64v8|manifest|all|test|upload-image}"
 		RETVAL=1
 
 esac
