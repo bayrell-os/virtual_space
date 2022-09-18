@@ -6,7 +6,7 @@ BASE_PATH=`dirname $SCRIPT_PATH`
 
 RETVAL=0
 VERSION=0.4
-SUBVERSION=2
+SUBVERSION=3
 IMAGE="bayrell/virtual_space"
 TAG=`date '+%Y%m%d_%H%M%S'`
 
@@ -63,8 +63,8 @@ case "$1" in
 		
 		if [ -z "$2" ] || [ -z "$3" ]; then
 			echo "Type:"
-			echo "$0 upload-image 0.4.2 raspa 172"
-			echo "  0.4.2 - version"
+			echo "$0 upload-image $VERSION.$SUBVERSION raspa 172"
+			echo "  $VERSION.$SUBVERSION - version"
 			echo "  raspa - ssh host"
 			echo "  172 - bandwidth KiB/s"
 			exit 1

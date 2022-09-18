@@ -303,7 +303,11 @@ local function show_login_page()
 	redirect_url = redirect_url .. ngx.var.request_uri
 	
 	if is_show_login_page == 1 then
-		return ngx.redirect("/login?r=" .. redirect_url, ngx.HTTP_MOVED_TEMPORARILY);
+		ngx.status = ngx.HTTP_UNAUTHORIZED
+		ngx.header["Content-type"] = 'text/html'
+		ngx.say('401 Access Denied. Please <a href="/login">login</a>')
+		ngx.exit(ngx.OK)
+		-- return ngx.redirect("/login?r=" .. redirect_url, ngx.HTTP_MOVED_TEMPORARILY);
 	end
 	
 	-- ngx.log(ngx.STDERR, "Show login=" .. tostring(is_show_login_page))
@@ -316,7 +320,7 @@ local function show_basic_auth()
 	ngx.header.www_authenticate = 'Basic realm=""'
 	ngx.status = ngx.HTTP_UNAUTHORIZED
 	ngx.say('401 Access Denied')
-	ngx.exit(ngx.HTTP_UNAUTHORIZED)
+	ngx.exit(ngx.OK)
 end
 
 
