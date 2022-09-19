@@ -5,7 +5,7 @@
 	<version>0.4.3</version>
 	<maintainer>Ildar &lt;ildar@bayrell.org&gt;</maintainer>
 	<marketplace>https://cloud.bayrell.org/</marketplace>
-	<date>2022-05-16T20:24:00+06:00</date>
+	<date>2022-22-20T00:37:00+06:00</date>
 	<arch>amd64</arch>
 	<arch>arm64v8</arch>
 	<link name="Docker hub">https://hub.docker.com/r/bayrell/virtual_space</link>
