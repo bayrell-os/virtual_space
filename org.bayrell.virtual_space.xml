@@ -2,7 +2,7 @@
 <template>
 	<uid>org.bayrell.virtual_space</uid>
 	<name>Virtual space</name>
-	<version>0.4.2</version>
+	<version>0.4.3</version>
 	<maintainer>Ildar &lt;ildar@bayrell.org&gt;</maintainer>
 	<marketplace>https://cloud.bayrell.org/</marketplace>
 	<date>2022-05-16T20:24:00+06:00</date>
@@ -15,7 +15,7 @@
 	<yaml>
 		<services>
 			<_var_app_name_>
-				<image>docker.io/bayrell/virtual_space:0.4.2</image>
+				<image>docker.io/bayrell/virtual_space:0.4.3</image>
 				<hostname>{{.Service.Name}}.{{.Task.ID}}.local</hostname>
 				<volumes>_var_app_name_:/data</volumes>
 			</_var_app_name_>
